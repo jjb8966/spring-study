@@ -329,6 +329,57 @@ class MemberServiceTest {
 
 # 3. 스프링 컨테이너와 스프링 빈
 
+## 3.1 스프링 컨테이너 생성 과정
+
+1. 스프링 컨테이너 생성
+2. 스프링 빈 등록
+3. 스프링 빈 의존관계 설정
+
+## 3.2 스프링 빈 조회
+
+- 스프링 컨테이너에는 사용자가 만든 애플리케이션 빈 뿐만 아니라 스프링 내부에서 사용하는 빈들도 존재함
+    - beanDefinition.getRole() == BeanDefinition.*ROLE_APPLICATION*
+        - 사용자가 만든 빈
+    - beanDefinition.getRole() == BeanDefinition.*ROLE_INFRASTRUCTURE*
+        - 스프링 내부에서 사용하는 빈
+- 스프링 컨테이너에 같은 타입의 빈이 2개 이상인 경우
+    - 해당 타입으로만 조회하면 예외가 발생함 (NoUniqueBeanDefinitionException)
+    - 빈 이름, 타입을 모두 사용해서 조회하면 정상적으로 조회할 수 있음
+- 스프링 컨테이너에 부모가 같은 타입이 2개 이상인 경우
+    - 스프링은 부모 타입으로 조회하면 자식 타입도 함께 조회하기 때문에 부모 타입으로 조회하면 예외가 발생함 (NoUniqueBeanDefinitionException)
+    - 빈 이름 + 부모 타입을 사용해서 조회하면 정상적으로 조회할 수 있음
+    - 자식 타입으로 조회하면 정상적으로 조회할 수 있음 → 권장하진 않음
+
+## 3.3 BeanFactory & ApplicationContext
+
+- BeanFactory
+    - 스프링 컨테이너의 최상위 인터페이스
+    - 스프링 `빈을 관리`하고 `조회`하는 역할
+    - getBean() 제공
+    - 직접 사용할 일은 거의 없음
+- ApplicationContext
+    - BeanFactory를 상속받은 인터페이스
+    - 빈을 관리하고 조회하는 기능 외 `다양한 부가기능`을 제공함
+        
+        ![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/a47ee424-a382-41d6-bb8b-39cf3f29257b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220315%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220315T170250Z&X-Amz-Expires=86400&X-Amz-Signature=de61c86a7fb6db674dd979d41d6f0a397baf1fa69a2d82737e81c98779d2fa2e&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject)
+        
+
+## 3.4 스프링 컨테이너 설정
+
+- 스프링 빈은 `다양한 형식의 설정 정보`를 이용해 만들 수 있음
+    - ex) java, XML, Groovy 등
+    - AppConfig 클래스를 이용해 설정 정보를 등록한게 java를 이용한 것
+- 스프링 컨테이너는 `BeanDefinition`을  기반으로 스프링 빈을 생성함
+    - BeanDefinition
+        - 빈 설정 메타 정보
+        - @Bean 당 하나씩 메타 정보가 생성됨
+- 어떤 형식인지 상관 없이 스프링 컨테이너는 BeanDefinition만 알면 된다!
+    - BeanDefinition 추상화
+        
+        → 역할 & 구현 분리
+        
+        ![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/e7a1aeab-c9cb-4453-bb68-fd01d86c9356/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220315%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220315T170313Z&X-Amz-Expires=86400&X-Amz-Signature=1fd8963693c2ae35793a24c2d0613555676f1c85a05becd275bcbb01c20f9e39&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject)
+
 # 4. 싱글톤 컨테이너
 
 # 5. 컴포넌트 스캔
