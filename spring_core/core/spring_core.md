@@ -382,6 +382,160 @@ class MemberServiceTest {
 
 # 4. 싱글톤 컨테이너
 
+## 4.1 웹 애플리케이션과 싱글톤 패턴
+
+- 웹  애플리케이션 → 여러 고객이 동시에 요청함
+- 스프링 없는 순수 DI 컨테이너
+    - 고객이 요청할 때 마다 객체를 새로 생성함 → 메모리 낭비가 심함
+- 싱글톤 패턴
+    
+    > 클래스의 인스턴스가 딱 1개만 생성되도록 보장하는 디자인 패턴
+    > 
+    - static 영역에 미리 1개의 객체만 생성해두고 getter를 통해서만 조회할 수 있음
+        - 싱글톤을 구현하는 방법은 다양함. 미리 생성하는게 가장 간편한 방법
+    - private 생성자를 통해 외부에서 new 키워드를 사용해 객체를 생성하지 못하도록 막음
+    
+    ```java
+    public class SingletonService {
+    
+        private static final SingletonService instance = new SingletonService();
+    
+        // 외부에서 new 를 사용해 객체를 생성하지 못함
+        private SingletonService() {
+        }
+    
+        public static SingletonService getInstance() {
+            return instance;
+        }
+    }
+    ```
+    
+    - 여러 고객의 요청이 있을 때 이미 만들어진 하나의 객체를 공유해서 사용하므로 휴율적으로 사용할 수 있음
+- 싱글톤 패턴의 문제점
+    - 구현 코드 자체가 많음
+    - 클라이언트가 구체 클래스에 의존함 (구체 클래스.getInstance())
+        - DIP, OCP 위반
+    - 테스트하기 어려움 → 유연성 떨어짐
+
+## 4.2 싱글톤 컨테이너
+
+> 싱글톤 패턴의 문제를 모두 해결해면서 객체를 싱글톤으로 관리할 수 있게 해주는 역할
+> 
+- 스프링 컨테이너
+    - 싱글톤 컨테이너 역할을 함
+    - 스프링 빈 → 싱글톤으로 관리되는 빈
+    - 싱글톤 레지스트리
+        - 싱글톤 객체를 생성하고 관리하는 기능
+    
+    cf) 스프링 빈은 싱글톤으로만 사용할 수 있는 것은 아님. 뒤에 스코프에서 자세히
+    
+
+## 4.3 싱글톤 방식 주의점
+
+- 무상태(stateless)로 설계해야 함
+    - 싱글톤 방식은 여러 클라이언트가 하나의 객체를 공유해서 사용함
+    - 특정 클라이언트가 객체의 값을 변경할 수 있는 필드가 있으면 안됨
+    - 공유되는 필드 대신 지역 변수, 파라미터 등으로 사용하는게 좋음
+    
+    <aside>
+    ❗ 스프링 빈 필드에 공유 되는 필드가 변경될 수 있으면 큰 장애가 발생할 수 있음
+    
+    </aside>
+    
+    ```java
+    package spring.corepractice.singleton;
+    
+    public class StatefulService {
+    
+        // 공유되는 필드
+        private int price;
+    
+        // 이 메소드를 통해 공유되는 필드가 변경될 수 있음 -> 장애가 발생할 수 있음
+        public void order(String name, int price) {
+            System.out.println("name = " + name + ", price = " + price);
+            this.price = price;
+        }
+    
+        public int getPrice() {
+            return price;
+        }
+    }
+    ```
+    
+
+## 4.4 @Configuration과 바이트코드 조작
+
+```java
+@Configuration      
+public class AppConfig {
+
+    @Bean
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    @Bean
+    public OrderService orderService() {
+        return new OrderServiceImpl(memberRepository(), discountPolicy());
+    }
+
+    @Bean
+    public MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public DiscountPolicy discountPolicy() {
+        //return new FixDiscountPolicy();
+        return new RateDiscountPolicy();
+    }
+}
+```
+
+- 스프링 컨테이너가 각 @Bean을 호출해서 스프링 빈을 생성함
+    - 이 때 memberRepository()는 3번 호출됨
+    - 자바 코드 상으로 MemoryMemberRepository 객체는 3개가 생성되어야 함
+        - 테스트 코드로 확인해보면 memberRepository() 메소드는 1번만 호출되고 MemoryMemberRepository 객체는 1개만 생성됨
+            
+            → 싱글톤으로 관리되고 있음
+            
+- @Configuration
+    
+    > 바이트코드를 조작하는 라이브러리(CGLIB)를 이용해 스프링 빈이 싱글톤이 되도록 보장해줌
+    > 
+    - AnnotationConfigApplicationContext에 파라미터로 넘긴 값도 스프링 빈으로 등록됨
+    - AppConfig 스프링 빈을 조회해 클래스 정보를 확인해보면 순수 클래스가 아님을 확인할 수 있음
+    
+    ```java
+    ApplicationContext ac = new AnnotationConfigApplicationContext(AppConfig.class);
+    
+    System.out.println("AppConfig : " + ac.getBean(AppConfig.class));
+    // AppConfig : spring.corepractice.AppConfig$$EnhancerBySpringCGLIB$$a241884e@8c11eee
+    ```
+    
+    - 스프링이 CGLIB 라이브러리를 사용해 AppConfig 클래스를 상속받은 임의의 다른 클래스를 만들어 스프링 빈으로 등록함
+    - `AppConfig@CGLIB` → AppConfig
+        - AppConfig가 부모 타입이므로 AppConfig로 조회할 수 있음
+    - 스프링이 만든 `임의의 클래스`가 스프링 빈을 싱글톤이 되도록 보장해줌
+        
+        ```java
+        @Override
+        @Bean
+        public MemberRepository memberRepository() {
+        	if(1.스프링 빈이 스프링 컨테이너에 등록되어 있으면?) {
+        		return 스프링 컨테이너에서 찾아서 반환;
+        	} else { //2.스프링 빈이 스프링 컨테이너에 등록되어있지 않으면?
+       			기존로직 호출 -> 스프링 빈을 생성해 스프링 컨테이너에 등록				
+       			return 스프링 컨테이너에서 찾아서 반환;
+       		}
+        }
+        ```
+        
+        - 결과적으로 스프링 컨테이너에 스프링 빈이 있으면 찾아서 반환하고, 없으면 스프링 빈을 생성해 등록하고 반환하므로 1개의 스프링 빈만 만들어짐 → 싱글톤
+- @Configuration 없이 @Bean만으로 설정 정보를 구성한다면?
+    - 스프링 컨테이너는 만들 수는 있지만 싱글톤을 보장하지 않음 (CGLIB 라이브러리를 사용하지 않기 때문)
+- 항상 @Configuration을 사용하자!
+
 # 5. 컴포넌트 스캔
 
 # 6. 의존관계 자동 주입
