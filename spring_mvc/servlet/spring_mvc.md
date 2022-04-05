@@ -4,6 +4,7 @@
 ### [1. 자바 백엔드 웹 기술 역사](#1-자바-백엔드-웹-기술-역사-1)
 ### [2. 서블릿](#2-서블릿-2)
 ### [3. 서블릿, JSP, MVC 패턴](#3-서블릿-jsp-mvc-패턴-1)
+### [4. MVC 프레임워크 만들기](#4-MVC-프레임워크-만들기-1)
 
 # 1. 자바 백엔드 웹 기술 역사
 
@@ -470,7 +471,7 @@ public class HelloServlet extends HttpServlet {
 ## 3.1 회원관리 웹 애플리케이션
 
 - Member class
-
+    
     ```java
     @Getter
     @Setter
@@ -489,9 +490,9 @@ public class HelloServlet extends HttpServlet {
         }
     }
     ```
-
+    
 - MemberRepository
-
+    
     ```java
     public class MemberRepository {
     
@@ -526,12 +527,12 @@ public class HelloServlet extends HttpServlet {
         }
     }
     ```
-
+    
 
 ## 3.2 서블릿으로 만들기
 
 - MemberSaveServlet.class
-
+    
     ```java
     @WebServlet(name = "memberSaveServlet", urlPatterns = "/servlet/members/save")
     public class MemberSaveServlet extends HttpServlet {
@@ -565,7 +566,7 @@ public class HelloServlet extends HttpServlet {
         }
     }
     ```
-
+    
     1. request로 넘겨받은 값으로 Member 객체 생성
     2. MemberRepository에 저장
     3. HTML 형식의 응답 데이터로 화면에 데이터 출력 (동적 데이터)
@@ -574,9 +575,9 @@ public class HelloServlet extends HttpServlet {
     - 서블릿을 통해 동적으로 HTML을 만들 수 있음
     - 하지만 자바 코드로 HTML을 만드는 것은 매우 비효율적임
     - HTML 문서에 동적으로 변하는 데이터만 부분적으로 넣을 수 있다면 훨씬 편리할 것
-
-      → 템플릿 엔진을 통해 가능
-
+        
+        → 템플릿 엔진을 통해 가능
+        
     - JSP, Thymeleaf, Velocity 등이 있음
         - JSP는 잘 사용하지 않는 추세
         - Spring과 가장 잘 통합되는 Thymeleaf를 사용하는게 좋음
@@ -584,7 +585,7 @@ public class HelloServlet extends HttpServlet {
 ## 3.3 JSP로 만들기
 
 - save.jsp
-
+    
     ```java
     <%@ page import="hello.servlet.domain.member.MemberRepository" %>
     <%@ page import="hello.servlet.domain.member.Member" %>
@@ -617,7 +618,7 @@ public class HelloServlet extends HttpServlet {
     </body>
     </html>
     ```
-
+    
     - html에 자바 코드를 부분적으로 넣는 방식
         - 정적인 html에서 동적인 자바 코드를 사용할 수 있음
     - <% %> : 자바 코드를 입력
@@ -631,3 +632,107 @@ public class HelloServlet extends HttpServlet {
         - 프로젝트가 커질수록 하나의 jsp 파일의 크기는 감당할수 없을 정도로 커질 것
 - MVC 패턴의 등장
     - 비지니스 로직은 서블릿에서 처리하고 JSP는 목적에 맞게 화면을 그리는 일에만 집중하도록 함
+
+## 3.4  MVC 패턴으로 만들기
+
+### 1. 개요
+
+- 하나의 서블릿 또는 jsp가 비지니스 로직과 뷰를 모두 포함하고 있는 기존 구조
+    - 변경 라이프사이클이 다르기 때문에 유지보수하기 힘듦
+- MVC 패턴
+    - 모델, 뷰, 컨트롤러 3가지 파트로 나눠서 프로그래밍하는 방식을 말함
+        - 모델
+            - 뷰에서 출력할 데이터를 담아두는 파트
+        - 뷰
+            - 모델에 담겨있는 데이터를 화면에 그리는 파트 (여기서는 html을 생성하는 부분)
+        - 컨트롤러
+            - HTTP 요청을 받아 비지니스 로직을 실행하고, 실행 결과를 모델에 담는 파트
+                - 컨트롤러는 비지니스 로직(service)를  호출하여 실행하는 방식
+                - 비지니스 로직이 변경되면 컨트롤러도 변경될 수 있음
+        
+        ![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/0ae40e5d-2583-4165-bde9-769db7aacba9/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220405%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220405T153446Z&X-Amz-Expires=86400&X-Amz-Signature=72a231ad992a2f92f268e6b3cba34a3cb5c0cad5a13131992adea2dc7234859a&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject)
+        
+- 예제
+    - 모델
+        - request 내부 저장소 (getAttribute)
+    - 뷰
+        - jsp
+    - 컨트롤러
+        - 서블릿
+
+### 2. MVC 패턴 적용
+
+- MvcMemberSaveServlet
+    
+    ```java
+    @WebServlet(name = "mvcMemberSaveServlet", urlPatterns = "/servlet-mvc/members/save")
+    public class MvcMemberSaveServlet extends HttpServlet {
+    
+        MemberRepository memberRepository = MemberRepository.getInstance();
+    
+        @Override
+        protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            // 비지니스 로직 실행
+            String userName = request.getParameter("userName");
+            int age = Integer.parseInt(request.getParameter("age"));
+    
+            Member member = new Member(userName, age);
+            memberRepository.save(member);
+    
+            // 모델에 비지니스 로직 실행 결과 저장
+            request.setAttribute("member", member);
+    
+            // 뷰로 모델을 넘겨줌
+            String viewPath = "/WEB-INF/views/save-result.jsp";
+            RequestDispatcher dispatcher = request.getRequestDispatcher(viewPath);
+            dispatcher.forward(request, response);
+        }
+    }
+    ```
+    
+    - WEB-INF
+        - 이 경로 하위에 jsp 파일이 있으면 외부에서 직접 jsp에 접근할 수 없음
+        - 항상 컨트롤러를 통해서만 접근 가능함
+    - forward vs redirect
+        - forward
+            - 서버 내부에서 일어나는 호출
+            - response가 나가지 않기 때문에 클라이언트는 전혀 인지하지 못함
+        - redirect
+            - 실제 클라이언트로 response가 나갔다가 클라이언트가 다시 redirect 경로를 요청하는 방식
+- save-result.jsp
+    
+    ```html
+    <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+    <body>
+    성공
+    <ul>
+        <li>id=${member.id}</li>
+        <li>username=${member.userName}</li>
+        <li>age=${member.age}</li>
+    </ul>
+    <a href="/index.html">메인</a>
+    </body>
+    </html>
+    ```
+    
+
+### 3. MVC 패턴의 한계
+
+- 중복되는 코드가 많음
+    - viewpath의 경로 (/WEB-INF/views/~~.jsp)
+        - 만약 경로가 변경된다면?
+            - 모든 컨트롤러의 viewpath 부분을 수정해야 함
+    - forward 부분
+        - 모든 컨트롤러가 같은 코드를 사용함
+- 불필요한 request, response
+    - request, response를 사용하지 않을 때에도 전달받음
+    - 테스트 코드 작성이 어려워짐
+- 기능이 복잡해질수록 `공통으로 처리`해야할 부분이 많아짐
+    
+    ⇒ `front-controller 패턴`을 도입해 이런 문제를 해결함
+    
+    ⇒ spring mvc의 핵심!
