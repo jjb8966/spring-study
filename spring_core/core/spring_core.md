@@ -875,7 +875,7 @@ public @interface MainDiscountPolicy {
 }
 ```
 
-1. 동일 타입의 Component에 붙임
+2. 동일 타입의 Component에 붙임
 
 ```java
 @Component
@@ -884,7 +884,7 @@ public class FixDiscountPolicy implements DiscountPolicy{
 }
 ```
 
-1. 의존 관계 주입 시 어노테이션을 붙여줌
+3. 의존 관계 주입 시 어노테이션을 붙여줌
 
 ```java
 @Component
