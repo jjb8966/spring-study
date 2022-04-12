@@ -5,6 +5,7 @@
 ### [2. 서블릿](#2-서블릿-2)
 ### [3. 서블릿, JSP, MVC 패턴](#3-서블릿-jsp-mvc-패턴-1)
 ### [4. MVC 프레임워크 만들기](#4-mvc-프레임워크-만들기-1)
+### [5. 스프링 MVC - 구조 이해](#5-스프링-mvc---구조-이해-1)
 
 # 1. 자바 백엔드 웹 기술 역사
 
@@ -1337,3 +1338,259 @@ public class FrontControllerServletV5 extends HttpServlet {
 spring MVC 프레임워크는 위와 같은 과정으로 발전해왔다.
 
 </aside>
+
+# 5. 스프링 MVC - 구조 이해
+## 5.1 전체 구조
+
+- 직접 만든 프레임워크와 거의 동일
+    
+    ![Untitled](https://s3.us-west-2.amazonaws.com/secure.notion-static.com/bf5fffa9-e355-429a-879a-e9d8049a573e/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45EIPT3X45%2F20220412%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20220412T111835Z&X-Amz-Expires=86400&X-Amz-Signature=b4bfdb95ae3d9f2d77ec0c011b85876d0da8c881e31e5462ce181be713e034db&X-Amz-SignedHeaders=host&response-content-disposition=filename%20%3D%22Untitled.png%22&x-id=GetObject)
+    
+    - FrontController → `DispatcherServlet (서블릿)`
+        - 모든 경로(url=”/”)에 대해서 매핑
+            
+            → 클라이언트가 어떤 경로로 요청하든 실행되는 서블릿
+            
+        - 이 서블릿의 `service()` 메소드가 호출
+            - DispatcherServlet.`doDispatch()` 호출
+                1. 핸들러 조회
+                2. 어댑터 조회
+                3. 어댑터 실행 → 핸들러 실행 → ModelAndView 리턴
+                4. ModelAndView를 통해 viewName 얻음
+                5. ViewResolver를 통해 View 얻음
+                    - jsp
+                        - ViewResolver → InternalResourceViewResolver
+                        - View → InternalResourceView
+                6. view로 렌더링
+    - 서블릿을 제외한 나머지는 모두 인터페이스
+        - handlerMappingMap → `HandlerMapping`
+        - MyHandlerAdapter → `HandlerAdapter`
+        - viewResolver → `ViewResolver`
+        - MyView → `View`
+
+### 1. Handler Mapping & Adapter
+
+- 컨트롤러가 호출되는 과정
+    1. 핸들러 매핑에서 클라이언트 요청에 맞는 컨트롤러(핸들러)를 찾음
+        - 핸들러 찾는 방식
+            1. 어노테이션
+            2. 스프링 빈 이름
+    2. 해당 핸들러를 지원하는 어댑터를 찾음
+    3. 어댑터가 핸들러 호출
+- 스프링이 대부분의 필요한 핸들러 매핑과 어댑터를 구현해놨기 때문에 개발자가 직접 만들 일은 거의 없음
+    - 자동 등록된 `핸들러 매핑`
+        1. `RequestMappingHandlerMapping`
+            - 어노테이션 기반 컨트롤러(@Controller, @RequestMapping) 찾음
+        2. BeanNameUrlHandlerMapping
+            - 스프링 빈 이름으로 컨트롤러 찾음
+    - 자동 등록된 `핸들러 어댑터`
+        1. `RequestMappingHandlerAdapter`
+            - 어노테이션 기반 컨트롤러를 지원
+        2. HttpRequestHandlerAdapter
+            - HttpRequestHandler를 지원
+        3. SimpleControllerHandlerAdapter
+            - Controller 인터페이스를 구현한 컨트롤러를 지원
+        
+        ⇒ 자동 등록된 핸들러 매핑과 어댑터는 작성된 순서를 우선순위로 조회됨
+        
+        ⇒ 실무에서 어노테이션 기반의 컨트롤러가 99%
+        
+
+### 2. View Resolver
+
+- 자동 등록된 `뷰 리졸버`
+    1. BeanNameViewResolver
+        - 빈 이름으로 뷰를 찾아서 반환
+    2. InternalResourceViewResolver
+        - jsp를 처리할 수 있는 뷰를 반환
+- Controller 인터페이스를 구현한 컨트롤러
+    - 핸들러 매핑 → BeanNameUrlHandlerMapping
+    - 핸들러 어댑터 → SimpleControllerHandlerAdapter
+    
+    ```java
+    @Component("/springmvc/old-controller")
+    public class OldController implements Controller {
+    
+        @Override
+        public ModelAndView handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+            System.out.println("OldController.handleRequest");
+            return new ModelAndView("new-form");
+        }
+    }
+    ```
+    
+    - ModelAndView을 뷰의 논리 주소를 사용해 생성하고 리턴
+    - ViewResolver 호출
+        1. BeanNameViewResolver가 new-form라는 이름을 갖는 스프링 빈을 찾는데 없음
+        2. `InternalResourceViewResolver` 호출
+            - 이 때 application.properties의 설정 정보를 기반으로 등록함
+                
+                ```java
+                spring.mvc.view.prefix=/WEB-INF/views/
+                spring.mvc.view.suffix=.jsp
+                ```
+                
+    - View 리턴
+        - InternalResourceViewResolver가 `InternalResourceView` 리턴
+        - forward()를 호출해 렌더링함
+
+## 5.2 스프링 MVC
+
+- 실무에서는 99% 어노테이션 기반의 컨트롤러를 사용함
+
+### 1. V1 - spring mvc 적용
+
+- 컨트롤러 3개 존재
+    
+    ```java
+    @Controller
+    public class SpringMemberFormControllerV1 {}
+    
+    @Controller
+    public class SpringMemberListControllerV1 {}
+    ```
+    
+    ```java
+    @Controller
+    public class SpringMemberSaveControllerV1 {
+    
+        private MemberRepository memberRepository = MemberRepository.getInstance();
+    
+        @RequestMapping("/springmvc/v1/members/save")
+        public ModelAndView process(HttpServletRequest request, HttpServletResponse response) {
+            String userName = request.getParameter("userName");
+            int age = Integer.parseInt(request.getParameter("age"));
+    
+            Member member = new Member(userName, age);
+            memberRepository.save(member);
+    
+            ModelAndView mv = new ModelAndView("save-result");
+            mv.addObject("member", member);
+    
+            return mv;
+        }
+    }
+    ```
+    
+    - 각각의 컨트롤러가 따로 존재하고 스프링 빈으로 등록됨
+    - @RequestMapping 어노테이션을 이용해 컨트롤러에 해당하는 URL 매핑
+        - 메소드 이름은 임의로 지어도 무관
+    - 메소드 실행 결과 ModelAndView를 리턴함
+    - mv.getModel().put() 대신 mv.addObject로 모델에 데이터를 넣을 수 있음
+
+### 2. V2 - 컨트롤러 통합
+
+- @RequestMapping 어노테이션을 메소드 단위가 아닌 클래스 단위로 적용해 3개의 컨트롤러를 하나의 컨트롤러로 통합함
+    
+    ```java
+    @Controller
+    @RequestMapping("/springmvc/v2/members")
+    public class SpringMemberControllerV2 {
+    
+        private MemberRepository memberRepository = MemberRepository.getInstance();
+    
+        @RequestMapping("/new-form")
+        public ModelAndView newForm() {
+            return new ModelAndView("new-form");
+        }
+    
+        @RequestMapping("/save")
+        public ModelAndView save(HttpServletRequest request, HttpServletResponse response) {
+            String userName = request.getParameter("userName");
+            int age = Integer.parseInt(request.getParameter("age"));
+    
+            Member member = new Member(userName, age);
+            memberRepository.save(member);
+    
+            ModelAndView mv = new ModelAndView("save-result");
+            mv.addObject("member", member);
+    
+            return mv;
+        }
+    
+        @RequestMapping()
+        public ModelAndView list() {
+            List<Member> members = memberRepository.findAll();
+    
+            ModelAndView mv = new ModelAndView("members");
+            mv.addObject("members", members);
+    
+            return mv;
+        }
+    }
+    ```
+    
+    - 클래스의 @RequestMapping
+        - 3개의 메소드의 공통적인 부분을 맵핑
+    - 메소드의 @RequestMapping
+        - 각 요청에 해당하는 세부 URL 맵핑
+    
+    cf) 하나의 컨트롤러로 통합하고 메소드 레벨에서만 어노테이션을 지정해도 가능하긴 함
+    
+    → 중복 코드가 존재하므로 권장하진 않음
+    
+    ```java
+    @RequestMapping("/springmvc/v2/members/save")
+    public ModelAndView save(){}
+    ```
+    
+
+### 3. V3 - 실용적인 방식
+
+1. 각 컨트롤러(메소드)가 ModelAndView가 아닌 viewName만 리턴
+2. 매개변수로 request, response가 아닌 parameter를 받음
+    - 실행 결과 String(viewName)을 리턴하므로 model을 매개변수로 받아 실행 결과를 직접 저장
+3. 단순히 URL 매핑만하는 @RequestMapping 대신 HTTP 메소드를 구분하여 동작할 수 있는 @GetMapping, @PostMapping 어노테이션 사용
+    - Get, Post, Put, Delete, Patch 모두 지원
+
+```java
+package hello.servlet.web.springmvc.v3;
+
+import hello.servlet.domain.member.Member;
+import hello.servlet.domain.member.MemberRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@Controller
+@RequestMapping("/springmvc/v3/members")
+public class SpringMemberControllerV3 {
+
+    private MemberRepository memberRepository = MemberRepository.getInstance();
+
+    // HTTP 메소드가 GET 일 때만 동작
+    // = @GetMapping
+    @RequestMapping(value = "/new-form", method = RequestMethod.GET)
+    public String newForm() {
+        return "new-form";
+    }
+
+    // HTTP 메소드가 POST 일 때만 동작
+    @PostMapping("/save")
+    public String save(
+            // =request.getParameter("userName")
+            // =Integer.parseInt(request.getParameter("age"))
+            @RequestParam("userName") String userName,
+            @RequestParam("age") int age,
+            Model model
+    ) {
+        Member member = new Member(userName, age);
+        memberRepository.save(member);
+
+        model.addAttribute("member", member);
+
+        return "save-result";
+    }
+
+    @GetMapping()
+    public String list(Model model) {
+        List<Member> members = memberRepository.findAll();
+
+        model.addAttribute("members", members);
+
+        return "members";
+    }
+}
+```
