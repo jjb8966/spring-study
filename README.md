@@ -21,6 +21,7 @@
 ### [2. 서블릿](https://github.com/jjb8966/spring/blob/main/spring_mvc/servlet/spring_mvc.md#2-서블릿-2)
 ### [3. 서블릿, JSP, MVC 패턴](https://github.com/jjb8966/spring/blob/main/spring_mvc/servlet/spring_mvc.md#3-서블릿-jsp-mvc-패턴-1)
 ### [4. MVC 프레임워크 만들기](https://github.com/jjb8966/spring/blob/main/spring_mvc/servlet/spring_mvc.md#4-mvc-프레임워크-만들기-1)
+### [5. 스프링 MVC - 구조 이해](https://github.com/jjb8966/spring/blob/main/spring_mvc/servlet/spring_mvc.md#5-%EC%8A%A4%ED%94%84%EB%A7%81-mvc---%EA%B5%AC%EC%A1%B0-%EC%9D%B4%ED%95%B4-1)
 
 ## 5. 스프링 MVC 2편
 
