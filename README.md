@@ -11,8 +11,8 @@
 ### [4. 싱글톤 컨테이너](https://github.com/jjb8966/spring/blob/main/spring_core/core/spring_core.md#4-싱글톤-컨테이너-1)
 ### [5. 컴포넌트 스캔](https://github.com/jjb8966/spring/blob/main/spring_core/core/spring_core.md#5-컴포넌트-스캔-1)
 ### [6. 의존관계 자동 주입](https://github.com/jjb8966/spring/blob/main/spring_core/core/spring_core.md#6-의존관계-자동-주입-1)
-### [7. 빈 생명주기 콜백]
-### [8. 빈 스코프]
+### [7. 빈 생명주기 콜백](https://github.com/jjb8966/spring/blob/main/spring_core/core/spring_core.md#7-%EB%B9%88-%EC%83%9D%EB%AA%85%EC%A3%BC%EA%B8%B0-%EC%BD%9C%EB%B0%B1-1)
+### [8. 빈 스코프](https://github.com/jjb8966/spring/blob/main/spring_core/core/spring_core.md#8-%EB%B9%88-%EC%8A%A4%EC%BD%94%ED%94%84-1)
 
 ## 3. HTTP 웹 기본 지식
 ### [1. 인터넷 네트워크](https://github.com/jjb8966/spring/blob/main/http/1.%20%EC%9D%B8%ED%84%B0%EB%84%B7%20%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC.md)
