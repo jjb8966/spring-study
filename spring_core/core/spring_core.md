@@ -982,4 +982,729 @@ static class DiscountService {
 
 # 7. 빈 생명주기 콜백
 
+## 7.1 개요
+
+- 스프링 빈의 **주기에 따라 필요한 작업**이 있음
+    - 스프링 `빈의 생성 시`
+        - 필요한 연결을 미리 해두는 **초기화 작업 필요**
+    - 스프링 `빈의 종료 시`
+        - **연결을 모두 종료하는 작업 필요**
+    - `문제`
+        - `수정자 주입`으로 의존관계를 주입받는 경우
+            - 스프링 빈이 생성 시 `의존관계를 주입받기 전에 초기화` 된다면?
+                
+                ⇒ 스프링 빈이 **제대로 초기화되지 않음**
+                
+- 예제
+    - NetworkClient 클래스
+        - url 필드
+            - 생성자 주입이 아닌 수정자 주입으로 의존관계를 주입받음
+        
+        ```java
+        public class NetworkClient {
+        
+            private String url;
+        
+            public NetworkClient() {
+                System.out.println("생성자 호출, url = " + url);
+        				connect();
+        				call("초기화 연결 메시지");
+            }
+        
+            public void setUrl(String url) {
+                this.url = url;
+            }
+        
+            public void connect() {
+                System.out.println("connect : " + url);
+            }
+        
+            public void call(String message) {
+                System.out.println("call : " + url + " message = " + message);
+            }
+        
+            public void disconnect() {
+                System.out.println("close : " + url);
+            }
+        }
+        ```
+        
+    - 테스트
+        
+        ```java
+        public class BeanLifeCycleTest {
+        
+            @Test
+            public void lifeCycleTest() {
+                ConfigurableApplicationContext ac = new AnnotationConfigApplicationContext(LifeCycleConfig.class);
+                ac.getBean(NetworkClient.class);
+                ac.close();
+            }
+        
+            @Configuration
+            static class LifeCycleConfig {
+        
+                @Bean
+                public NetworkClient networkClient() {
+                    // 생성자 호출 -> 생성자 내부에 url 을 사용하는 로직(초기화 로직)이 있다면? url은 아직 null인 상태
+                    NetworkClient networkClient = new NetworkClient();
+                    // 수정자 주입 (의존관계 주입)
+                    networkClient.setUrl("https://hello-spring.dev");
+                    return networkClient;
+                }
+            }
+        }
+        ```
+        
+        > [출력]
+        생성자 호출, url = null
+        connect : null
+        call : null message = 초기화 연결 메시지
+        > 
+        - 스프링 빈의 url이 제대로 초기화되지 않음
+            - 스프링 빈이 외부 수정자 주입을 통해 의존관계를 주입 받는데 `의존관계를 주입 받기 전에 생성자가 먼저 호출됨`
+- `스프링 빈 라이프사이클`
+    
+    > 스프링 컨테이너 생성 → 스프링 빈 생성 → `의존관계 주입` → `초기화 콜백` → 사용 → `소멸 전 콜백` → `스프링 종료`
+    > 
+    - 스프링 빈이 **생성자 주입**을 받는 경우
+        
+        → 스프링 **빈 생성 단계에서 의존관계 주입**이 일어나기 때문에 **문제가 발생하지 않음**
+        
+    - 그럼 무조건 생성자 주입으로만 의존관계를 주입하면 되는것 아닌가?
+        - `객체(빈)`의 **생성과 초기화**를 **분리**
+            - 객체 생성
+                - 파라미터 받기
+                - 메모리 할당해 객체 생성
+            - 초기화
+                - 외부 컨넥션을 연결 → 무거운 작업일 경우 분리 효과 더 큼
+        - `생성자 주입`은 **객체 내부에 값을 셋팅하는 정도**로만 사용함
+        - **무거운 작업**을 하거나 **외부와 연결**을 해야하는 경우는 `생성과 초기화를 분리`해서 사용하는게 **유지보수하기가 훨씬 좋음**
+    - **싱글톤 빈**은 스프링 컨테이너가 **종료되기 직전**에 **소멸 전 콜백**이 일어남
+    - 생명주기가 짧은 빈의 경우 컨테이너가 종료되기 전에 소멸 전 콜백이 일어남 (8장 스코프에서 자세히)
+- 스프링은 3가지 `빈 생명주기 콜백`을 지원함
+    1. InitializingBean, DisposableBean 
+        
+        → 거의 사용x
+        
+    2. 설정 정보에서 **초기화, 종료 메소드 지정** 
+        
+        → 외부 라이브러리를 사용할 경우
+        
+    3. `@PostConstruct`, `@PreDestroy` 어노테이션 
+        
+        → 제일 많이 사용
+        
+
+## 7.2 인터페이스 InitializingBean, DisposableBean
+
+```java
+public class NetworkClient implements InitializingBean, DisposableBean {    
+		
+		private String url;
+
+    public NetworkClient() {
+        System.out.println("생성자 호출, url = " + url);
+				//connect();
+				//call("초기화 연결 메시지");
+    }
+
+    public void setUrl(String url) {
+    }
+
+    public void connect() {
+    }
+
+    public void call(String message) {
+    }
+
+    public void disconnect() {
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        connect();
+        call("초기화 연결 메시지");
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        disconnect();
+    }
+}
+```
+
+```java
+@Test
+public void lifeCycleTest() {
+    ConfigurableApplicationContext ac = new AnnotationConfigApplicationContext(LifeCycleConfig.class);
+    ac.getBean(NetworkClient.class);
+    ac.close();
+}
+
+@Configuration
+static class LifeCycleConfig {
+
+    @Bean
+    public NetworkClient networkClient() {
+        NetworkClient networkClient = new NetworkClient();
+        networkClient.setUrl("https://hello-spring.dev");
+        return networkClient;
+    }
+}
+```
+
+> [출력]
+생성자 호출, url = null  
+connect: [http://hello-spring.dev](http://hello-spring.dev/)  
+call: [http://hello-spring.dev](http://hello-spring.dev/) message = 초기화 연결 메시지  
+13:24:49.043 [main] DEBUG org.springframework.context.annotation.AnnotationConfigApplicationContext - Closing NetworkClient.destroy  
+close + [http://hello-spring.dev](http://hello-spring.dev/)
+> 
+- 진행 순서
+    1. 스프링 컨테이너 생성
+    2. `스프링 빈 생성` → 생성자 호출
+    3. setUrl() 호출 → `의존관계 주입`
+    4. afterPropertiesSet()  호출 → `초기화 콜백`
+    5. 빈 사용
+    6. destroy() 호출 → 소멸 전 콜백
+    7. 스프링 종료
+        
+        ⇒ 의존관계 주입 후 초기화 됨
+        
+- `단점`
+    - **스프링 전용 인터페이스** → 스프링에 의존적
+    - 이미 정의된 인터페이스를 구현해야 하므로 **메서드 이름을 변경할 수 없음**
+    - **외부 라이브러리**에 **적용할 수 없음**
+        
+        ⇒ 거의 사용 x
+        
+
+## 7.3 초기화 메소드, 소멸 메소드 지정
+
+```java
+public class NetworkClient {
+
+    public void init() {
+        System.out.println("NetworkClient.init");
+        connect();
+        call("초기화 연결 메세지");
+    }
+
+    public void close() {
+        System.out.println("NetworkClient.close");
+        disconnect();
+    }
+}
+```
+
+```java
+    @Configuration
+    static class LifeCycleConfig {
+
+        @Bean(initMethod = "init", destroyMethod = "close")
+        public NetworkClient networkClient() {
+            NetworkClient networkClient = new NetworkClient();
+            networkClient.setUrl("https://hello-spring.dev");
+            return networkClient;
+        }
+    }
+```
+
+- 스프링 빈이 스프링에 의존하지 않음
+- **메소드 이름을 자유롭게 사용**할 수 있음
+- 코드를 고칠 수 없는 외부 라이브러리에서도 초기화, 종료 메소드를 사용할 수 있음
+
+## 7.4 @PostConstruct & @PreDestroy
+
+```java
+public class NetworkClient {
+
+    @PostConstruct
+    public void init() throws Exception {
+        connect();
+        call("초기화 연결 메세지");
+    }
+
+    @PreDestroy
+    public void close() throws Exception {
+        disconnect();
+    }
+}
+```
+
+```java
+    @Configuration
+    static class LifeCycleConfig {
+
+        @Bean
+        public NetworkClient networkClient() {
+            NetworkClient networkClient = new NetworkClient();
+            networkClient.setUrl("https://hello-spring.dev");
+            return networkClient;
+        }
+    }
+```
+
+- 종료 메소드, 초기화 메소드에 어노테이션만 붙이면 됨
+- **가장 편리**하고 컴포넌트 스캔과도 잘 어울리므로 **권장하는 방법**
+- javax 자바 표준을 사용함 → 스프링에 의존적이지 않음
+- 유일한 단점은 코드를 고칠 수 없는 외부 라이브러리인 경우 어노테이션을 붙일 수 없기 때문에 사용 불가
+    - 이 경우 메소드 지정 방법으로 해결하면 됨
+
 # 8. 빈 스코프
+
+## 8.1 빈 스코프
+
+- 빈 스코프
+    - 빈이 존재할 수 있는 범위
+- 스프링이 지원하는 빈 스코프
+    1. `싱글톤 스코프` (default)
+        - 스프링 컨테이너의 시작부터 종료까지 유지되는 스코프
+            - 가장 넓은 범위의 스코프
+    2. `프로토타입 스코프`
+        - 스프링 컨테이너가 빈 객체 생성 & 의존관계 주입까지 관여
+            - 이 후로는 관리 x
+            - 매우 짧은 범위의 스코프
+    3. 웹 관련 스코프
+        - `request`
+            - 웹 요청이 들어오고 나갈때까지 유지되는 스코프
+        - session
+        - application
+- 사용 방법
+    - 빈으로 생성될 코드에 @Scope(”…”)로 지정
+    - default → 싱글톤 스코프
+        
+        ```java
+        @Scope("prototype")
+        @Component
+        public class PrototypeBean {
+        }
+        ```
+        
+        ```java
+        @Scope("prototype")
+        @Bean
+        public MemberService memberService() {
+        }
+        ```
+        
+
+## 8.2 싱글톤 스코프
+
+- 스프링 컨테이너의 시작부터 종료까지 유지되는 스코프
+    - 가장 넓은 범위의 스코프
+- default
+    - 지금까지 사용한 스프링 빈은 싱글톤 빈이었음
+- 스프링 컨테이너에서 조회 시
+    - 항상 **같은 인스턴스**를 반환
+        
+        ![Untitled](![Untitled 0](https://user-images.githubusercontent.com/87421893/169703529-1f817cdf-6c9c-4c12-9b47-8a16ead2deb3.png)
+)
+        
+
+## 8.3 프로토타입 스코프
+
+- 스프링 컨테이너가 빈 객체 생성 & 의존관계 주입까지 관여
+    - 이 후로는 관리 x
+    - 스프링 빈을 받은 클라이언트가 관리해야 함
+        - @PreDestroy 메소드가 자동으로 호출되지 않음. 직접 호출해야 함
+    - 매우 짧은 범위의 스코프
+- 스프링 컨테이너에서 조회 시
+    - 항상 **새로운 인스턴스**를 생성해서 반환
+        
+        ![Untitled](![Untitled 1](https://user-images.githubusercontent.com/87421893/169703538-8c2c145f-de55-4268-a6f1-1098e7fffdb1.png)
+
+        
+        ![Untitled](![Untitled 2](https://user-images.githubusercontent.com/87421893/169703549-cd69ddbf-f96c-47fc-a225-682e370b0eed.png)
+)
+        
+- 사용 이유
+    - 스프링 빈을 사용할 때마다 의존관계 주입이 완료된 새로운 인스턴스가 필요한 경우
+    - 실무에서 대부분 싱글톤 스코프로 해결되므로 자주 사용하진 않음
+
+```java
+@Test
+public void prototypeBeanFind() {
+    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(PrototypeBean.class);
+
+    PrototypeBean bean1 = ac.getBean(PrototypeBean.class);
+    PrototypeBean bean2 = ac.getBean(PrototypeBean.class);
+
+    System.out.println("bean1 = " + bean1);
+    System.out.println("bean2 = " + bean2);
+
+    // destroy 메소드를 사용자가 직접 호출하지 않으면 빈이 자동으로 소멸되지 않음
+    bean1.destroy();
+
+    ac.close();
+
+    assertThat(bean1).isNotEqualTo(bean2);
+}
+
+@Scope("prototype")
+static class PrototypeBean {
+
+    @PostConstruct
+    public void init() {
+        System.out.println("PrototypeBean.init");
+    }
+
+    @PreDestroy
+    public void destroy() {
+        System.out.println("PrototypeBean.destroy : " + this);
+    }
+}
+```
+
+> [출력]
+> 
+> 
+> `PrototypeBean.init
+> PrototypeBean.init`
+> bean1 = hello.core.scope.PrototypeTest$PrototypeBean@`5f9be66c`
+> bean2 = hello.core.scope.PrototypeTest$PrototypeBean@`3abada5a`
+> PrototypeBean.destroy : hello.core.scope.PrototypeTest$PrototypeBean@5f9be66c
+> 10:51:11.498 [main] DEBUG org.springframework.context.annotation.AnnotationConfigApplicationContext - Closing
+> 
+- 스프링 빈 조회 시 인스턴스 생성 후 반환
+    - 각 요청마다 하나씩 생성되므로 생성자가 2번 호출됨을 확인
+- 2번의 요청으로 생성된 프로토타입 스코프 빈은 서로 다름
+- 스프링 컨테이너는 클라이언트에게 인스턴스 반환 후 더 이상 관리하지 않음
+    - 종료 메소드를 직접 호출한 bean1만 destroy() 메소드가 실행됨
+
+## 8.4 프로토타입 & 싱글톤 빈을 같이 사용할 때 문제점
+
+### 1. `싱글톤 빈`이 **프로토타입 빈을 필드로 가지는 경우**
+
+```java
+@Test
+public void singletonClientUsePrototype() {
+    AnnotationConfigApplicationContext ac =
+            new AnnotationConfigApplicationContext(ClientBean.class, PrototypeBean.class);
+
+    ClientBean bean1 = ac.getBean(ClientBean.class);
+    ClientBean bean2 = ac.getBean(ClientBean.class);
+
+    int count1 = bean1.logic();     // 1
+    int count2 = bean2.logic();     // 2
+
+    assertThat(bean1.prototypeBean).isEqualTo(bean2.prototypeBean);
+    assertThat(count1).isNotSameAs(count2);
+}
+
+@RequiredArgsConstructor
+static class ClientBean {
+
+    private final PrototypeBean prototypeBean; // 프로토타입 스코프 빈
+
+    public int logic() {
+        prototypeBean.addCount();
+        return prototypeBean.getCount();
+    }
+}
+```
+
+- 싱글톤 빈은 스프링 컨테이너 시작 시 생성되는데 이 때 생성자 주입으로 프로토타입 빈을 요청하게 됨
+- 스프링 컨테이너는 프로토타입 빈을 생성해서 반환해주고 싱글톤 빈 내부에 저장됨 (정확히는 프로토타입 빈의 참조값 저장)
+- 이 후에 싱글톤 빈 조회 시 이미 생성된 싱글톤 빈을 조회하게 됨
+    - 이미 생성된 싱글톤 빈을 조회하므로 프로토타입 빈을 요청하지 않음
+    - 새로운 프로토타입 빈 인스턴스가 생성되지 않음
+        - 프로토타입 빈은 빈 요청 때마다 새로운 별개의 인스턴스가 생성되어 각각 다른 빈을 사용하기 위해 사용함
+        - 위의 경우는 같은 프로토타입 빈 인스턴스를 사용하게되어 원하는 결과를 얻지 못함
+
+### 2. 해결 방법
+
+1. **스프링 컨테이너에 직접 요청**
+    
+    ```java
+    @RequiredArgsConstructor
+    static class ClientBean {
+    
+        private final AnnotationConfigApplicationContext ac;
+    
+        public int logic() {
+            // 의존관계를 외부에서 주입 받는게 아니라 직접 필요한 의존관계를 찾음
+            // -> Dependency Lookup (DL)
+            PrototypeBean prototypeBean = ac.getBean(PrototypeBean.class);
+            prototypeBean.addCount();
+            return prototypeBean.getCount();
+        }
+    }
+    ```
+    
+    - 스프링 빈의 **필드로 스프링 컨테이너를 가짐**
+    - 스프링 내부 로직에서 스**프링 컨테이너를 직접 사용해** `의존관계를 찾음` (`DL`, Dependency Lookup)
+        - 싱글톤 빈은 1개지만 로직을 실행할 때마다 프로토타입 빈을 요청하므로 서로 다른 프로토타입 빈을 얻게 됨
+    - 단점
+        - **스프링 컨테이너에 종속적인 코드**가 됨
+        - **테스트가 어려워짐**
+    
+    > 프로토타입 빈을 대신 찾아주는, 딱 DL 기능만 있는 무언가가 필요함
+    → Provider
+    > 
+2. `ObjectProvider`
+    - **스프링 컨테이너에 독립적**이면서 **DL 기능만 제공**하는 클래스
+        
+        ```java
+        @RequiredArgsConstructor
+        static class ClientBean {
+        
+            private final ObjectProvider<PrototypeBean> provider;
+        
+            public int logic() {
+                PrototypeBean prototypeBean = provider.getObject();
+                prototypeBean.addCount();
+                return prototypeBean.getCount();
+            }
+        }
+        ```
+        
+        - 스프링 컨테이너를 통해 해당 빈을 찾아서 반환 (**DL**)
+        - 스프링에서 제공하는 기술 → **스프링에 의존적**
+        - 만약 **스프링이 아닌 다른 컨테이너**에서 DL이 필요한 경우
+            - **Provider**를 사용해야 함
+    - ObjectFactory 클래스의 상속을 받음
+        - 편의기능이 추가된 것
+    - 별도의 라이브러리는 필요없지만 스프링에 의존적
+        - 스프링 컨테이너에서만 사용 가능
+3. `JSR-330 Provider`
+    - **스프링에 의존하지 않는 Provider**
+        - 자바 표준을 사용 (javax.inject.Provider)
+        - gradle에 라이브러리 추가해야 함
+            - `javax.inject:javax.inject:1`
+    - 별도의 라이브러리가 필요하지만 스프링에 의존적이지 않음
+        - **다른 컨테이너에서도 사용 가능**
+
+> 보통 스프링 컨테이너에서 사용하므로 ObjectProvider를 사용함
+> 
+
+> 사실 실무에서 싱글톤 빈으로 대부분 해결 가능하기 때문에 프로토타입 빈을 사용하는 일을 매우 드묾
+DL은 프로토타입에만 사용하는 것은 아니므로 **Provider에 대한 이해**를 하고 있을 것
+> 
+
+## 8.5 웹 스코프
+
+- 특징
+    - **웹 환경에서만 동작**
+    - 스프링 컨테이너가 스코프의 **종료 시점까지 관리**
+        - 종료 메소드 자동 호출됨
+- 종류
+    - `request`
+        - HTTP 요청이 들어올 때 부터 나갈때까지 유지되는 스코프
+        - HTTP 요청 별 인스턴스가 생성
+    - session
+        - HTTP 세션과 동일한 생명주기를 가짐
+    - application
+        - ServletContext와 동일한 생명주기를 가짐
+    - websocket
+        - 웹 소켓과 동일한 생명주기를 가짐
+    
+    → request만 알면 나머지는 다 비슷
+    
+
+## 8.6 request 스코프
+
+### 1. request 스코프
+
+- **HTTP 요청이 들어올 때 부터 나갈때까지 유지**되는 스코프
+- 웹 환경에서만 동작하므로 **라이브러리** 필요
+    - implementation 'org.springframework.boot:spring-boot-starter-web'
+    - 이 라이브러리를 추가하면 스프링 부트가 **내장 톰캣 서버**와 스프링을 함께 실행시킴
+    - AnnotationConfigApplicationContext → AnnotationConfigServletWebServerApplicationContext 기반으로 애플리케이션 구동
+- `HTTP 요청 별 인스턴스가 생성`
+    
+    ![Untitled](![Untitled 3](https://user-images.githubusercontent.com/87421893/169703563-c286ca83-d1a5-4186-a740-6961cafd2958.png)
+)
+    
+- 동시에 여러 HTTP 요청이 오는 경우
+    - 요청 별 로그를 남기고 싶을 때 사용하면 효과적
+        
+        ```java
+        @Component
+        @Scope(value = "request")
+        public class MyLogger {
+        
+            private String uuid; // 각 http 요청마다 다른 값
+            private String requestURL;
+        
+            public void log(String message) {
+            }
+        
+            public void setRequestURL(String requestURL) {
+            }
+        
+            @PostConstruct
+            public void init() {
+                uuid = UUID.randomUUID().toString();
+            }
+        
+            @PreDestroy
+            public void close() {
+            }
+        }
+        ```
+        
+        ```java
+        @Service
+        @RequiredArgsConstructor
+        public class LogDemoService {
+        
+            private final MyLogger myLogger;
+        
+            public void logic(String id) {
+                myLogger.log("service id : " + id);
+            }
+        }
+        ```
+        
+        ```java
+        @Controller
+        @RequiredArgsConstructor
+        public class LogDemoController {
+        
+            private final LogDemoService logDemoService;
+            private final MyLogger myLogger;
+        
+            @RequestMapping("log-demo")
+            @ResponseBody
+            public String logDemo(HttpServletRequest request) {
+                String requestURL = request.getRequestURL().toString();
+        
+                myLogger.setRequestURL(requestURL);
+                myLogger.log("controller test");
+                logDemoService.logic("testID");
+                return "ok";
+            }
+        }
+        ```
+        
+        - 위의 코드는 `에러`가 남
+            - Controller, Service 클래스가 **request 스코프 빈을 필드로 가짐**
+            - `request 스코프 빈`은 **HTTP 요청이 와야 생성되는 빈**
+            - @RequiredArgsConstructor
+                - final 필드를 모아 의존관계를 주입받는 생성자를 만듦
+                - **웹 스코프 빈은 아직 생성되지 않았는데 의존관계 주입을 받으려고 시도함**
+                    
+                    → 에러 발생
+                    
+        - 해결 방법
+            1. Provider
+            2. proxyMode
+
+### 2. Provider
+
+- Controller, Service 클래스에 request 스코프 빈이 아닌 **Provider를 필드로** 가지게 함
+    - Controller, Service 스프링 빈이 생성될 때 **request 스코프 빈을 조회하지 않음**
+    
+    ```java
+    @Service
+    @RequiredArgsConstructor
+    public class LogDemoService {
+    
+        private final ObjectProvider<MyLogger> provider;
+    
+        public void logic(String id) {
+            MyLogger myLogger = provider.getObject();
+            myLogger.log("service id : " + id);
+        }
+    }
+    ```
+    
+    ```java
+    @Controller
+    @RequiredArgsConstructor
+    public class LogDemoController {
+    
+        private final LogDemoService logDemoService;
+        private final ObjectProvider<MyLogger> provider;
+    
+        @RequestMapping("log-demo")
+        @ResponseBody
+        public String logDemo(HttpServletRequest request) {
+            String requestURL = request.getRequestURL().toString();
+            MyLogger myLogger = provider.getObject();
+    
+            myLogger.setRequestURL(requestURL);
+            myLogger.log("controller test");
+            logDemoService.logic("testID");
+            return "ok";
+        }
+    }
+    ```
+    
+    - HTTP 요청이 오면 (log-demo URL 요청) 해당 메소드가 실행될 때 Provider가 request 스코프 빈을 조회하여 의존관계를 주입 (DL)
+        - HTTP 요청 → request 스코프 빈 생성
+        - Provider가 조회
+    - `핵심`
+        - request 스코프 빈이 생성될 때까지 **빈의 조회를 지연** 시킴!
+
+### 3. proxyMode
+
+- request 스코프 빈을 상속받은 가짜 프록시 빈을 미리 주입함
+    
+    ```java
+    @Component
+    @Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
+    public class MyLogger {
+    		내부 동일    
+    }
+    ```
+    
+    - TARGET_CLASS → 클래스에 적용 시
+    - TARGET_INTERFACE → 인터페이스에 적용 시
+    
+    ```java
+    @Service
+    @RequiredArgsConstructor
+    public class LogDemoService {
+    
+        private final MyLogger myLogger;
+    
+        public void logic(String id) {
+            myLogger.log("service id : " + id);
+        }
+    }
+    ```
+    
+    ```java
+    @Controller
+    @RequiredArgsConstructor
+    public class LogDemoController {
+    
+        private final LogDemoService logDemoService;
+        private final MyLogger myLogger;
+    
+        @RequestMapping("log-demo")
+        @ResponseBody
+        public String logDemo(HttpServletRequest request) {
+            String requestURL = request.getRequestURL().toString();
+    
+            myLogger.setRequestURL(requestURL);
+            myLogger.log("controller test");
+            logDemoService.logic("testID");
+            return "ok";
+        }
+    }
+    ```
+    
+    - Controller, Service 클래스를 처음 에러가 발생한 코드와 똑같이 작성해도 오류가 안남
+        - **필드로 request 스코프 빈**을 가지고 있어도 **생성 시점에 의존 관계를 주입받을 수 있기 때문**
+    - `동작 원리`
+        1. 스프링 컨테이너가 `CGLIB 라이브러리`를 통해 request 스코프 빈 클래스를 상속받은 `가짜 프록시 객체를 생성함`
+            - 가짜 프록시 객체 이름은 **request 스코프 빈 이름과 동일** (myLogger)
+            - 가짜 프록시 객체에는 **request 스코프 빈을 요청할 수 있는 위임 로직**이 들어있음
+            - 결국 가짜 프록시 객체는 스프링 컨테이너 시작 시점에 생성되므로 **request 스코프가 아니라 싱글톤 스코프**
+        2. Controller, Service 빈 생성 시 `가짜 프록시 객체를 주입함`
+        3. `HTTP 요청`이 오면 `가짜 프록시 객체의 메소드가 호출`됨 (myLogger.logic())
+        4. 이 메소드가 `진짜 request 스코프 빈의 myLogger.logic()을 호출`함
+            - HTTP 요청 → request 스코프 빈 생성
+            - 가짜 프록시 객체가 진짜 request 스코프 빈 요청
+    - 어노테이션만 약간 바꿨을 뿐인데 원본 객체 대신 프록시 객체를 사용함
+        - 프록시 객체가 원본 객체를 상속받은 객체이기에 가능
+        - **다형성을 활용한 DI 컨테이너의 힘!**
+    - `핵심`
+        - request 스코프 빈이 생성될 때까지 **빈의 조회를 지연** 시킴!
+    
+    > Provider, proxyMode 둘 다 request 스코프 빈이 생성될 때까지 빈의 조회를 지연시켜서 문제를 해결함
+    >
