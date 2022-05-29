@@ -16,7 +16,8 @@
 
 ### 1. 구조
 
-![Untitled](4%20MVC%20%E1%84%91%E1%85%B3%E1%84%85%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AF%E1%84%8F%E1%85%B3%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%207e6af14513c74eb3b8d7606dbac9ffbf/Untitled.png)
+![Untitled 0](https://user-images.githubusercontent.com/87421893/170874965-fa061710-a15f-45cd-8af7-a63ec56a17d6.png)
+
 
 ### 2. 컨트롤러 인터페이스
 
@@ -111,7 +112,8 @@ public class FrontControllerServletV1 extends HttpServlet {
 
 ### 1. 구조
 
-![Untitled](4%20MVC%20%E1%84%91%E1%85%B3%E1%84%85%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AF%E1%84%8F%E1%85%B3%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%207e6af14513c74eb3b8d7606dbac9ffbf/Untitled%201.png)
+![Untitled 1](https://user-images.githubusercontent.com/87421893/170874978-2e5e9268-7939-4355-9cc1-ee92cf29ca8f.png)
+
 
 - 뷰로 이동하는 중복되는 코드를 줄임
 
@@ -205,7 +207,8 @@ protected void service(HttpServletRequest request, HttpServletResponse response)
 
 ### 1. 구조
 
-![Untitled](4%20MVC%20%E1%84%91%E1%85%B3%E1%84%85%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AF%E1%84%8F%E1%85%B3%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%207e6af14513c74eb3b8d7606dbac9ffbf/Untitled%202.png)
+![Untitled 2](https://user-images.githubusercontent.com/87421893/170874996-355639ac-5683-49f4-aa3e-b0f83b67f7b8.png)
+
 
 ### (1) ModelView 클래스
 
@@ -368,7 +371,8 @@ private void modelToRequest(Map<String, Object> model, HttpServletRequest reques
 
 ### 1. 구조
 
-![Untitled](4%20MVC%20%E1%84%91%E1%85%B3%E1%84%85%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AF%E1%84%8F%E1%85%B3%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%207e6af14513c74eb3b8d7606dbac9ffbf/Untitled%203.png)
+![Untitled 3](https://user-images.githubusercontent.com/87421893/170875019-6c40c9ca-fa74-44d1-bcb5-f49312bd0d4c.png)
+
 
 - 컨트롤러가 ModelView가 아닌 viewName, 즉 뷰의 논리 이름만 리턴함
 - 데이터를 담을 model은 매개변수로 전달받음
@@ -447,7 +451,8 @@ protected void service(HttpServletRequest request, HttpServletResponse response)
 
 ### 1. 구조
 
-![Untitled](4%20MVC%20%E1%84%91%E1%85%B3%E1%84%85%E1%85%A6%E1%84%8B%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AF%E1%84%8F%E1%85%B3%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%207e6af14513c74eb3b8d7606dbac9ffbf/Untitled%204.png)
+![Untitled 4](https://user-images.githubusercontent.com/87421893/170875041-c2e5f00b-3747-4ca9-b40f-621d56d40817.png)
+
 
 - `어댑터 패턴`
     - **다양한 방식의 컨트롤러를 사용**하기 위해 적용하는 패턴
@@ -672,7 +677,7 @@ public class FrontControllerServletV5 extends HttpServlet {
         
 
 <aside>
-⭐ 버전이 높아질 수록 **프론트 컨트롤러가 복잡**해지고 **컨트롤러는 간단**해진다.
+⭐ 버전이 높아질 수록 프론트 컨트롤러가 복잡해지고 컨트롤러는 간단해진다.  
 spring MVC 프레임워크는 위와 같은 과정으로 발전해왔다.
 
 </aside>
