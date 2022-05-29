@@ -4,7 +4,8 @@
 
 - 직접 만든 프레임워크와 거의 동일
     
-    ![Untitled](5%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%AE%E1%84%8C%E1%85%A9%20%E1%84%8B%E1%85%B5%E1%84%92%E1%85%A2%203930732912db49799abc690a1d5004e6/Untitled.png)
+    ![Untitled](https://user-images.githubusercontent.com/87421893/170875147-125add2b-2e80-46de-9ba2-52c9ad30acc6.png)
+
     
     - FrontController → `DispatcherServlet`
         - **DispatcherServlet도 서블릿**으로 동작
