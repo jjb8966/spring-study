@@ -182,7 +182,8 @@
                 - 컨트롤러는 비지니스 로직(service)를  호출하여 실행하는 방식
                 - 비지니스 로직이 변경되면 컨트롤러도 변경될 수 있음
                 
-                ![Untitled](3%20%E1%84%89%E1%85%A5%E1%84%87%E1%85%B3%E1%86%AF%E1%84%85%E1%85%B5%E1%86%BA,%20JSP,%20MVC%20%E1%84%91%E1%85%A2%E1%84%90%E1%85%A5%E1%86%AB%20ebe90771f436490a9e7b5d6218fef9a3/Untitled.png)
+                ![Untitled](https://user-images.githubusercontent.com/87421893/170874932-3841cdb0-a298-48ff-8d37-9caf0117a77f.png)
+
                 
 - 예제
     - 모델

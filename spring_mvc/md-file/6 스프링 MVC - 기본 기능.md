@@ -34,7 +34,8 @@
     - 로그 출력 포맷
         - `시간`—`로그 레벨`—`프로세스 ID`—`쓰레드명`—`클래스명`—`로그 메시지`
         
-        ![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled.png)
+        ![Untitled 0](https://user-images.githubusercontent.com/87421893/170875196-e76bdd79-e5ec-4c9c-bfa6-b219923fbe01.png)
+
         
 - `로그 레벨`
     - **trace > debug > info > warn > error**
@@ -249,7 +250,8 @@ public class RequestHeaderController {
 }
 ```
 
-![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled%201.png)
+![Untitled 1](https://user-images.githubusercontent.com/87421893/170875207-25aadf3b-6683-44d6-84fc-4cee2b1efddf.png)
+
 
 - MultiValueMap
     - 하나의 키로 여러 개의 값을 받을 수 있음
@@ -706,7 +708,8 @@ HTTP 메시지 바디 → String, 객체 변환시켜줌 (뒤에서 자세히)
 
 - 요청 & 응답 시 **HTTP 메시지 바디와 자바 코드를 변환**할 때 **메시지 컨버터가 동작함**
     
-    ![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled%202.png)
+    ![Untitled 2](https://user-images.githubusercontent.com/87421893/170875292-1a59050f-1c78-451d-87d0-3605cc2166cf.png)
+
     
     - 요청
         - `@RequestBody` & `HttpEntity (ResponseEntity)`
@@ -827,11 +830,11 @@ public interface HttpMessageConverter<T> {
         
 - `스프링 서버 동작 방식 (총 정리)`
     
-    ![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled%203.png)
+    ![Untitled 3](https://user-images.githubusercontent.com/87421893/170875311-48a22ecb-b953-45f4-af94-f6d0322214d7.png)
     
-    ![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled%204.png)
+    ![Untitled 4](https://user-images.githubusercontent.com/87421893/170875319-c838b2cd-f240-4020-8d77-351a255e866c.png)
     
-    ![Untitled](6%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%20%E1%84%80%E1%85%B5%E1%84%82%E1%85%B3%E1%86%BC%209a03a3aebf094f60a1ccc48bf264d3a1/Untitled%205.png)
+    ![Untitled 5](https://user-images.githubusercontent.com/87421893/170875324-bed9e901-d548-44f5-ab4b-0a35c9861b5e.png)
     
     1. 클라이언트로부터 HTTP 메세지 요청이 들어옴
     2. DispatcherServlet(Front Controller) 호출
