@@ -14,7 +14,7 @@
     - 상품 수정
 - 서비스 흐름
     
-    ![Untitled](7%20%E1%84%89%E1%85%B3%E1%84%91%E1%85%B3%E1%84%85%E1%85%B5%E1%86%BC%20MVC%20-%20%E1%84%8B%E1%85%B0%E1%86%B8%20%E1%84%91%E1%85%A6%E1%84%8B%E1%85%B5%E1%84%8C%E1%85%B5%20%E1%84%86%E1%85%A1%E1%86%AB%E1%84%83%E1%85%B3%E1%86%AF%E1%84%80%E1%85%B5%2081d17473d087448e8bb2a150f4409300/Untitled.png)
+    ![Untitled](https://user-images.githubusercontent.com/87421893/171104852-fb6d8d4a-d60c-49c9-9bec-0ec53c74e0dd.png)
     
 
 # 2. 상품 서비스 HTML
