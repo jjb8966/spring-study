@@ -18,7 +18,7 @@ public class NPlusOneProb {
             Team team = new Team();
             em.persist(team);
 
-            jpabook.jpashop.chapter8.lazy.Member member = new jpabook.jpashop.chapter8.lazy.Member();
+            EagerMember member = new EagerMember();
             member.setUsername("test");
             member.setTeam(team);
             em.persist(member);
@@ -28,7 +28,7 @@ public class NPlusOneProb {
 
             // select member만 했는데 Team 테이블을 조회하는 쿼리가 나감 -> N + 1
             System.out.println("---------------------1 + 1---------------------");
-            List<Member> members = em.createQuery("select m from Member m", Member.class).getResultList();
+            List<EagerMember> members = em.createQuery("select m from LazyMember m", EagerMember.class).getResultList();
             System.out.println("-----------------------------------------------");
             // 만약 멤버들이 다른 팀 소속이라면?
             // 1 : 최초 쿼리
@@ -38,7 +38,7 @@ public class NPlusOneProb {
             Team otherTeam = new Team();
             em.persist(otherTeam);
 
-            Member newMember = new Member();
+            EagerMember newMember = new EagerMember();
             newMember.setUsername("newMember");
             newMember.setTeam(otherTeam);
             em.persist(newMember);
@@ -48,7 +48,7 @@ public class NPlusOneProb {
 
             // select member 쿼리 1개로 Team을 조회하는 쿼리 2번 나감
             System.out.println("---------------------2 + 1---------------------");
-            List<Member> newMembers = em.createQuery("select m from Member m", Member.class).getResultList();
+            List<EagerMember> newMembers = em.createQuery("select m from LazyMember m", EagerMember.class).getResultList();
             System.out.println("-----------------------------------------------");
 
             // 결론 : 즉시 로딩 (EAGER) 쓰지 마라

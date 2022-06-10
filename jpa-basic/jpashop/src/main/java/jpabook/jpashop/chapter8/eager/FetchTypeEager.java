@@ -20,7 +20,7 @@ public class FetchTypeEager {
             Team team = new Team();
             em.persist(team);
 
-            Member member = new Member();
+            EagerMember member = new EagerMember();
             member.setUsername("test");
             member.setTeam(team);
             em.persist(member);
@@ -29,7 +29,7 @@ public class FetchTypeEager {
             em.clear();
 
             // Member, Team join 해서 같이 로딩
-            Member findMember = em.find(Member.class, member.getId());
+            EagerMember findMember = em.find(EagerMember.class, member.getId());
             // findMember.team -> 프록시 객체
             System.out.println("findMember.getTeam().getClass() = " + findMember.getTeam().getClass());
 

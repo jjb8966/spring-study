@@ -15,7 +15,7 @@ public class ProxyBasic {
         tr.begin();
 
         try {
-            Member member = new Member();
+            ProxyMember member = new ProxyMember();
             member.setUsername("hello");
             em.persist(member);
 
@@ -26,7 +26,7 @@ public class ProxyBasic {
 //            Member findMember = em.find(Member.class, member.getId());
 
             //getReference는 디비 조회 미루고 가짜 객체를 반환
-            Member refMember = em.getReference(Member.class, member.getId());
+            ProxyMember refMember = em.getReference(ProxyMember.class, member.getId());
 
             System.out.println("메소드 사용 전 refMember : " + refMember.getClass());
 

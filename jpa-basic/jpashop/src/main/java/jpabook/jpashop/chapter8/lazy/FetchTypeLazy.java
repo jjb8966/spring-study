@@ -18,7 +18,7 @@ public class FetchTypeLazy {
             Team team = new Team();
             em.persist(team);
 
-            Member member = new Member();
+            LazyMember member = new LazyMember();
             member.setUsername("test");
             member.setTeam(team);
             em.persist(member);
@@ -27,7 +27,7 @@ public class FetchTypeLazy {
             em.clear();
 
             // Member만 디비에서 로딩함
-            Member findMember = em.find(Member.class, member.getId());
+            LazyMember findMember = em.find(LazyMember.class, member.getId());
             // findMember.team -> 프록시 객체
             System.out.println("findMember.getTeam().getClass() = " + findMember.getTeam().getClass());
 
@@ -39,7 +39,7 @@ public class FetchTypeLazy {
 
             // +@ join fetch
             // 필요한 경우 관련된 참조 테이블을 조인해서 같이 조회할 수 있는 기능
-            List<Member> resultList = em.createQuery("select m from Member m join fetch m.team", Member.class).getResultList();
+            List<LazyMember> resultList = em.createQuery("select m from LazyMember m join fetch m.team", LazyMember.class).getResultList();
 
             tr.commit();
         } catch (Exception e) {

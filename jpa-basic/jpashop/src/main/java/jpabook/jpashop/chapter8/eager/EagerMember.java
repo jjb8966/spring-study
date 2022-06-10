@@ -8,7 +8,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter @Setter
-public class Member {
+public class EagerMember {
 
     @Id @GeneratedValue
     @Column(name = "member_id")

@@ -14,14 +14,14 @@ public class ProxyFunction {
         tr.begin();
 
         try {
-            Member member = new Member();
+            ProxyMember member = new ProxyMember();
             member.setUsername("test");
             em.persist(member);
 
             em.flush();
             em.clear();
 
-            Member reference = em.getReference(Member.class, member.getId());
+            ProxyMember reference = em.getReference(ProxyMember.class, member.getId());
             // 1. 프록시 강제 초기화
 //             reference.getUsername();
             Hibernate.initialize(reference);

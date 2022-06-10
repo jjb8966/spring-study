@@ -1,6 +1,5 @@
-package jpabook.jpashop.chapter8.lazy;
+package jpabook.jpashop.chapter8.proxy;
 
-import jpabook.jpashop.chapter8.proxy.Team;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +7,7 @@ import javax.persistence.*;
 
 @Entity
 @Getter @Setter
-public class Member {
+public class ProxyMember {
 
     @Id @GeneratedValue
     @Column(name = "member_id")
@@ -18,7 +17,7 @@ public class Member {
     private String street;
     private String zipcode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
 }
