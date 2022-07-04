@@ -1,5 +1,6 @@
 package spring.dbaccess.service;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.*;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -28,7 +29,13 @@ class MemberServiceV1Test {
 
     @BeforeEach
     void before() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(URL, USER, PW);
+//        DriverManagerDataSource dataSource = new DriverManagerDataSource(URL, USER, PW);
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setJdbcUrl(URL);
+        dataSource.setUsername(USER);
+        dataSource.setPassword(PW);
+        dataSource.setMaximumPoolSize(10);
+
         memberRepository = new MemberRepositoryV1(dataSource);
         memberService = new MemberServiceV1(memberRepository);
     }
