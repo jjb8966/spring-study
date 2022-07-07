@@ -1,12 +1,9 @@
 package spring.dbaccess.repository;
 
 import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.HikariPool;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import spring.dbaccess.connection.DBConnectionUtil;
 import spring.dbaccess.domain.Member;
 
 import java.sql.SQLException;
