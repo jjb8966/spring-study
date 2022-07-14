@@ -14,12 +14,22 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
+@SpringBootTest // @SpringBootApplication 을 찾아냄
 @Transactional
 class ItemRepositoryTest {
 
     @Autowired
     ItemRepository itemRepository;
+
+//    @Autowired
+//    PlatformTransactionManager transactionManager;
+//    TransactionStatus status;
+//
+//    @BeforeEach
+//    void beforeEach() {
+//        // 트랜잭션 시작
+//        status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+//    }
 
     @AfterEach
     void afterEach() {
@@ -27,9 +37,12 @@ class ItemRepositoryTest {
         if (itemRepository instanceof MemoryItemRepository) {
             ((MemoryItemRepository) itemRepository).clearStore();
         }
+
+//        transactionManager.rollback(status);
     }
 
     @Test
+        //@Commit
     void save() {
         //given
         Item item = new Item("itemA", 10000, 10);
@@ -43,6 +56,7 @@ class ItemRepositoryTest {
     }
 
     @Test
+        //@Rollback(value = false)
     void updateItem() {
         //given
         Item item = new Item("item1", 10000, 10);
