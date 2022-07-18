@@ -5,16 +5,22 @@ import hello.itemservice.repository.ItemRepository;
 import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class ItemServiceV1 implements ItemService {
 
     private final ItemRepository itemRepository;
+
+    @Autowired
+    public ItemServiceV1(ItemRepository itemRepository) {
+        this.itemRepository = itemRepository;
+    }
 
     @Override
     public Item save(Item item) {
