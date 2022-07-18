@@ -55,7 +55,6 @@ public class ValidationItemControllerV2 {
     }
 
     //@PostMapping("/add")
-
     /**
      * BindingResult -> 인터페이스. Errors(인터페이스) 를 상속받고 있음
      * 구현체 -> BeanPropertyBindingResult
@@ -112,7 +111,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    //    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult,   // 반드시 검증 대상 뒤에 선언해야 함!
                             RedirectAttributes redirectAttributes, Model model) {
         // 필드 검증
@@ -163,7 +162,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-    //    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV3(@ModelAttribute Item item, BindingResult bindingResult,   // 반드시 검증 대상 뒤에 선언해야 함!
                             RedirectAttributes redirectAttributes, Model model) {
         // 필드 검증
@@ -214,7 +213,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-//    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item, BindingResult bindingResult,   // 반드시 검증 대상 뒤에 선언해야 함!
                             RedirectAttributes redirectAttributes, Model model) {
         // 필드 검증
@@ -261,7 +260,7 @@ public class ValidationItemControllerV2 {
         return "redirect:/validation/v2/items/{itemId}";
     }
 
-//    @PostMapping("/add")
+    //@PostMapping("/add")
     public String addItemV5(@ModelAttribute Item item, BindingResult bindingResult,   // 반드시 검증 대상 뒤에 선언해야 함!
                             RedirectAttributes redirectAttributes, Model model) {
 
