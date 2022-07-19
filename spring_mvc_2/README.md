@@ -8,7 +8,7 @@
 
 ### [4. 검증1 - Validation](https://github.com/jjb8966/spring/blob/main/spring_mvc_2/md-file/4.%20%EA%B2%80%EC%A6%9D%20-%20Validation.md#4-%EA%B2%80%EC%A6%9D1---validation)
 
-### [5. 검증2 - Bean Validation]
+### [5. 검증2 - Bean Validation](https://github.com/jjb8966/spring/blob/main/spring_mvc_2/md-file/5.%20%EA%B2%80%EC%A6%9D2%20-%20Bean%20Validation.md#5-%EA%B2%80%EC%A6%9D2---bean-validation)
 
 ### [6. 로그인 처리1 - 쿠키, 세션]
 
