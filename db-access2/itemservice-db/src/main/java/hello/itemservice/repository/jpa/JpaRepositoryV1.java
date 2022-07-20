@@ -20,7 +20,7 @@ import java.util.Optional;
 @Repository
 @RequiredArgsConstructor
 @Transactional
-public class JpaRepository implements ItemRepository {
+public class JpaRepositoryV1 implements ItemRepository {
 
     private final EntityManager em;
 
