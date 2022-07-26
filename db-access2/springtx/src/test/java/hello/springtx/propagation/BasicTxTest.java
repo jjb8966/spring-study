@@ -1,6 +1,7 @@
 package hello.springtx.propagation;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,7 +9,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 
 import javax.sql.DataSource;
@@ -17,7 +20,8 @@ import javax.sql.DataSource;
 @SpringBootTest
 public class BasicTxTest {
 
-    @Autowired PlatformTransactionManager txManager;
+    @Autowired
+    PlatformTransactionManager txManager;
 
     @TestConfiguration
     static class Config {
@@ -73,6 +77,63 @@ public class BasicTxTest {
         TransactionStatus inner = txManager.getTransaction(new DefaultTransactionAttribute());
         log.info("inner 커밋");
         txManager.commit(inner);
+        log.info("inner 종료");
+
+        log.info("outer 커밋");
+        txManager.commit(outer);
+        log.info("outer 종료");
+    }
+
+    @Test
+    void outer_rollback() {
+        log.info("=======outer 시작=======");
+        TransactionStatus outer = txManager.getTransaction(new DefaultTransactionAttribute());
+
+        log.info("=======inner 시작=======");
+        TransactionStatus inner = txManager.getTransaction(new DefaultTransactionAttribute());
+        log.info("inner 커밋");
+        txManager.commit(inner);
+        log.info("inner 종료");
+
+        log.info("outer 롤백");
+        txManager.rollback(outer);
+        log.info("outer 종료");
+    }
+
+    @Test
+    void inner_rollback() {
+        log.info("=======outer 시작=======");
+        TransactionStatus outer = txManager.getTransaction(new DefaultTransactionAttribute());
+
+        log.info("=======inner 시작=======");
+        TransactionStatus inner = txManager.getTransaction(new DefaultTransactionAttribute());
+        log.info("inner 롤백");
+        txManager.rollback(inner);  // rollback-only 표시
+        log.info("inner 종료");
+
+        log.info("outer 커밋");
+//        txManager.commit(outer); -> UnexpectedRollbackException 예외 발생!
+        Assertions.assertThrows(UnexpectedRollbackException.class,
+                () -> txManager.commit(outer));
+
+        log.info("outer 종료");
+    }
+
+    @Test
+    void inner_rollback_requires_new() {
+        log.info("=======outer 시작=======");
+        TransactionStatus outer = txManager.getTransaction(new DefaultTransactionAttribute());
+        log.info("outer.isNewTransaction() = {}", outer.isNewTransaction());
+
+        log.info("=======inner 시작=======");
+//        TransactionStatus inner = txManager.getTransaction(new DefaultTransactionAttribute());
+        DefaultTransactionAttribute definition = new DefaultTransactionAttribute();
+        definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);  // default : PROPAGATION_REQUIRED
+        TransactionStatus inner = txManager.getTransaction(definition);
+        log.info("inner.isNewTransaction() = {}", inner.isNewTransaction());
+
+        log.info("inner 롤백");
+        txManager.rollback(inner);
         log.info("inner 종료");
 
         log.info("outer 커밋");
