@@ -6,8 +6,10 @@
 </head>
 <body>
 <form th:object="${form}" th:method="post">
-    number <input type="text", th:field="*{number}"><br>
-    localDateTime <input type="text", th:field="*{localDateTime}"><br/>
+    number : <input type="text" th:value="*{number}"><br>
+    number (@NumberFormat) : <input type="text" th:field="*{number}"><br>                 <!--타입 컨버터 동작-->
+    localDateTime : <input type="text" th:value="*{localDateTime}"><br>
+    localDateTime (@DateTimeFormat) : <input type="text" th:field="*{localDateTime}"><br>   <!--타입 컨버터 동작-->
     <input type="submit">
 </form>
 </body>

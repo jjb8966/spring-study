@@ -12,9 +12,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addFormatters(FormatterRegistry registry) {
+        // 컨버터 등록
         registry.addConverter(new StringToIpPortConverter());
         registry.addConverter(new IpPortToStringConverter());
 
+        // 포맷터 등록
         registry.addFormatter(new MyNumberFormatter());
     }
 }

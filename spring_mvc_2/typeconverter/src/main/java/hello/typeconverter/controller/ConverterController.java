@@ -1,7 +1,8 @@
 package hello.typeconverter.controller;
 
-import hello.typeconverter.type.IpPort;
-import lombok.Data;
+import hello.typeconverter.IpPort;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,26 +10,28 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
+@Slf4j
 public class ConverterController {
 
     @GetMapping("/converter-view")
     public String converterView(Model model) {
-        model.addAttribute("number", 1000);
+        model.addAttribute("number", 10000);
         model.addAttribute("ipPort", new IpPort("127.0.0.1", 8080));
 
-        return "/converter-view";
+        return "converter-view";
     }
 
-    @GetMapping("/converter-edit")
+    @GetMapping("/converter/edit")
     public String converterForm(Model model) {
         IpPort ipPort = new IpPort("127.0.0.1", 8080);
         Form form = new Form(ipPort);
+
         model.addAttribute("form", form);
 
         return "converter-form";
     }
 
-    @PostMapping("/converter-edit")
+    @PostMapping("/converter/edit")
     public String converterEdit(@ModelAttribute Form form, Model model) {
         IpPort ipPort = form.getIpPort();
         model.addAttribute("ipPort", ipPort);
@@ -36,9 +39,8 @@ public class ConverterController {
         return "converter-view";
     }
 
-    @Data
+    @Getter
     static class Form {
-
         private IpPort ipPort;
 
         public Form(IpPort ipPort) {

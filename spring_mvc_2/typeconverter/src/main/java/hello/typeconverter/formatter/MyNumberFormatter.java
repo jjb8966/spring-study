@@ -8,20 +8,23 @@ import java.text.ParseException;
 import java.util.Locale;
 
 @Slf4j
-public class MyNumberFormatter implements Formatter<Number> {   // 숫자 <-> 문자 사이 타입을 변환하는 포맷터
+public class MyNumberFormatter implements Formatter<Number> {
 
     @Override
-    // String -> Number
     public Number parse(String text, Locale locale) throws ParseException {
-        log.info("[String -> Number] text={}, locale={}", text, locale);
-        NumberFormat numberFormat = NumberFormat.getInstance(locale);
-        return numberFormat.parse(text);
+        log.info("String -> Number : text = {}, locale = {}", text, locale);
+
+        NumberFormat format = NumberFormat.getInstance(locale);
+
+        return format.parse(text);
     }
 
     @Override
-    // Number -> String
     public String print(Number number, Locale locale) {
-        log.info("[Number -> String] number={}, locale={}", number, locale);
-        return NumberFormat.getInstance(locale).format(number);
+        log.info("Number -> String : number = {}, locale = {}", number, locale);
+
+        NumberFormat format = NumberFormat.getInstance(locale);
+
+        return format.format(number);
     }
 }
