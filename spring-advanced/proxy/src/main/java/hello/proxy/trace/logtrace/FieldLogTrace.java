@@ -65,7 +65,7 @@ public class FieldLogTrace implements LogTrace {
     private static String addSpace(String prefix, int level) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < level; i++) {
-            sb.append( (i == level - 1) ? "|" + prefix : "|   ");
+            sb.append((i == level - 1) ? "|" + prefix : "|   ");
         }
         return sb.toString();
     }

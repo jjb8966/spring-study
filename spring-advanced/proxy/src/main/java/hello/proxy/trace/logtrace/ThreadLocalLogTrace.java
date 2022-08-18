@@ -17,8 +17,10 @@ public class ThreadLocalLogTrace implements LogTrace {
     public TraceStatus begin(String message) {
         syncTraceId();
         TraceId traceId = traceIdHolder.get();
-        Long startTimeMs = System.currentTimeMillis();
+
         log.info("[{}] {}{}", traceId.getId(), addSpace(START_PREFIX, traceId.getLevel()), message);
+
+        Long startTimeMs = System.currentTimeMillis();
 
         return new TraceStatus(traceId, startTimeMs, message);
     }
@@ -37,6 +39,7 @@ public class ThreadLocalLogTrace implements LogTrace {
         Long stopTimeMs = System.currentTimeMillis();
         long resultTimeMs = stopTimeMs - status.getStartTimeMs();
         TraceId traceId = status.getTraceId();
+
         if (e == null) {
             log.info("[{}] {}{} time={}ms", traceId.getId(), addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs);
         } else {
@@ -48,6 +51,7 @@ public class ThreadLocalLogTrace implements LogTrace {
 
     private void syncTraceId() {
         TraceId traceId = traceIdHolder.get();
+
         if (traceId == null) {
             traceIdHolder.set(new TraceId());
         } else {
@@ -57,6 +61,7 @@ public class ThreadLocalLogTrace implements LogTrace {
 
     private void releaseTraceId() {
         TraceId traceId = traceIdHolder.get();
+
         if (traceId.isFirstLevel()) {
             traceIdHolder.remove();//destroy
         } else {
@@ -66,9 +71,11 @@ public class ThreadLocalLogTrace implements LogTrace {
 
     private static String addSpace(String prefix, int level) {
         StringBuilder sb = new StringBuilder();
+
         for (int i = 0; i < level; i++) {
-            sb.append( (i == level - 1) ? "|" + prefix : "|   ");
+            sb.append((i == level - 1) ? "|" + prefix : "|   ");
         }
+
         return sb.toString();
     }
 }
