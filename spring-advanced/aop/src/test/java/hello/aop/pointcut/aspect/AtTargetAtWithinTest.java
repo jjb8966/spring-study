@@ -1,4 +1,4 @@
-package hello.aop.pointcut;
+package hello.aop.pointcut.aspect;
 
 import hello.aop.member.annotation.ClassAop;
 import lombok.extern.slf4j.Slf4j;
