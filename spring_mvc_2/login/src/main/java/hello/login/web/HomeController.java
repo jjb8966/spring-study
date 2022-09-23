@@ -29,7 +29,10 @@ public class HomeController {
     }
 
     //@GetMapping("/")
-    public String homeLoginV1(@CookieValue(name = "memberId", required = false) Long memberId, Model model) {
+    public String homeLoginV1(
+            @CookieValue(name = "memberId", required = false) Long memberId,
+            Model model) {
+
         if (memberId == null) {
             return "home";
         }
@@ -60,7 +63,7 @@ public class HomeController {
 
     //@GetMapping("/")
     public String homeLoginV3(HttpServletRequest request, Model model) {
-        HttpSession session = request.getSession();
+        HttpSession session = request.getSession(false);
 
         if (session == null) {
             return "home";
@@ -78,7 +81,10 @@ public class HomeController {
     }
 
     //@GetMapping("/")
-    public String homeLoginV3Spring(@SessionAttribute(name = "loginMember", required = false) Member loginMember, Model model) {
+    public String homeLoginV3Spring(
+            @SessionAttribute(name = "loginMember", required = false) Member loginMember,
+            Model model) {
+
         if (loginMember == null) {
             return "home";
         }
