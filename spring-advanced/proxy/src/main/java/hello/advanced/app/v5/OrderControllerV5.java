@@ -1,9 +1,7 @@
-package hello.proxy.app.v5;
+package hello.advanced.app.v5;
 
 import hello.proxy.trace.callback.TraceTemplate;
 import hello.proxy.trace.logtrace.LogTrace;
-import hello.proxy.trace.template.AbstractTemplate;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 

@@ -1,4 +1,4 @@
-package hello.proxy.app.v4;
+package hello.advanced.app.v4;
 
 import hello.proxy.trace.logtrace.LogTrace;
 import hello.proxy.trace.template.AbstractTemplate;

@@ -1,33 +1,25 @@
 package hello.proxy.app.v3;
 
-import hello.proxy.trace.TraceStatus;
-import hello.proxy.trace.logtrace.LogTrace;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class OrderControllerV3 {
 
     private final OrderServiceV3 orderService;
-    private final LogTrace trace; // FieldLogTrace 주입
 
     @GetMapping("/v3/request")
     public String request(String itemId) {
-        TraceStatus status = null;
+        orderService.orderItem(itemId);
+        return "ok";
+    }
 
-        try {
-            status = trace.begin("OrderController.request()");
-
-            orderService.orderItem(itemId);
-
-            trace.end(status);
-
-            return "ok";
-        } catch (Exception e) {
-            trace.exception(status, e);
-            throw e; //예외를 꼭 다시 던져주어야 한다.
-        }
+    @GetMapping("/v3/no-log")
+    public String noLog() {
+        return "ok";
     }
 }
